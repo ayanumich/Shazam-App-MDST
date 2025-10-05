@@ -22,10 +22,14 @@ def remove_duplicate_peaks(peaks: list[tuple[int, float]]):
     peaksc=peaks.copy()
     
     # TODO: sort peaks by time
+    peaksc = sorted(peaksc, key=lambda x: x[1])
 
-    
     # TODO: for each peak, search for duplicates within the next 15 peaks (ordered by time)
-    
+    for i in range(len(peaksc)-15):
+        # loop over next 15
+        for k in range(15):
+            if peaks_are_duplicate(peaksc[i], peaksc[i+k]):
+                peaksc.pop(peaksc[i+k])
 
     return peaksc
 
@@ -58,7 +62,7 @@ def find_peaks_windowed(frequencies, times, magnitude,
     
     # TODO: create frequency bands based on logarithmic scale. Assume fft_window_size = 1024
     # Hint: start from 0-40Hz
-    bands = None
+    bands = [(0, 40), (40, 57), (57, 82), (82, 118), (118, 169), (169, 243), (243, 348), (348, 498), (498, 714), (714, 1024)]
 
     # slide a window across time axis
     # height: entire frequency range
