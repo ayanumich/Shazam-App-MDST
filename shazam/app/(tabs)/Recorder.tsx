@@ -106,22 +106,28 @@ export default function Recorder() {
 
       const formData = new FormData();
 
-      // Lets encode the URI of our recording to a blob
-      const responsee = await fetch(uri);
-      const blob = await responsee.blob();
-
-      // Create a file from the blob
-      const file = new File([blob], "audio.flac", { type: "audio/flac" });
-
-      console.log("Audio file being sent:", file);
-
-      // Append the actual file to FormData
-      formData.append("audio", file);
+      // Lets encode the URI of our recording to a blob (web) or use the native uri (RN)
+      // NOTE: In React Native/Expo you should append { uri, name, type } to FormData.
+      if (Platform.OS === "web") {
+        const responsee = await fetch(uri);
+        const blob = await responsee.blob();
+        const file = new File([blob], "audio.flac", { type: "audio/flac" });
+        formData.append("audio", file);
+      } else {
+        // use the native file object shape expected by React Native fetch/FormData
+        const ext = uri.split(".").pop() ?? "m4a";
+        const mime = ext === "wav" ? "audio/wav" : `audio/${ext}`;
+        formData.append("audio", {
+          uri,
+          name: `recording.${ext}`,
+          type: mime,
+        } as any);
+      }
 
       console.log("Sending POST request to server...");
 
       // TODO: type in your server address here
-      const predict_endpoint = "";
+      const predict_endpoint = "http://35.2.127.66:5003/predict";
 
       // This is our first JavaScript promise which is a fetch request to the server
       // We start by making a post request to our prediction endpoint using the form data above
@@ -140,6 +146,10 @@ export default function Recorder() {
           // TODO: Change important varaibles now that we have our prediction data
           // Hint: Some variables we might want to change are saving the predicted song,
           // the url of the associated youtube video, and some marker so our app knows to show the prediction
+          setPredictedSong(data.title);
+          setPredictedConfidence(data.confidence);
+          setPredictedUrl(data.youtube_url);
+          setShowPrediction(true);
         })
         .catch((error) => {
           console.error("Error in prediction fetch:", error);
@@ -256,7 +266,7 @@ export default function Recorder() {
               value={text}
               onChangeText={setText}
               placeholder="Enter YouTube URL here..."
-              onSubmitEditing={}
+              onSubmitEditing={() => addSongToDatabase(text)}
               returnKeyType="done"
             />
           </KeyboardAvoidingView>
@@ -272,7 +282,7 @@ export default function Recorder() {
           {!addingSong && (
             <View style={{ width: 150, marginBottom: 20, marginTop: 10 }}>
               {/** Implement the same function as above for onPress to add a song to the database. **/}
-              <Button title="Add Song" onPress={} />
+              <Button title="Add Song" onPress={() => addSongToDatabase(text)} />
             </View>
           )}
         </SafeAreaView>
