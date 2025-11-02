@@ -122,6 +122,7 @@ def predict():
     })
     
 # TODO: add an endpoint (@app.route) for adding a song to the database
+@app.route('/add_song', methods=['POST'])
 def add_song():
     """
     Add a song to the database from the uploaded audio file and YouTube URL.
@@ -130,16 +131,17 @@ def add_song():
     """
     
     # TODO: Add a statement here to make sure 'youtube_url' is in request.form
-    pass
+    if youtube_url not in request.form:
+        return jsonify({'error' : 'missing youtube url'}), 400
 
     # TODO: Extract the YouTube URL from the form data
     # HINT: what did add_song send to the endpoint?
-    #       files = {'youtube_url': (None, youtube_url, 'text/plain')}
-    #       response = requests.post(url, files=files)  # <-- access files 
-    #                                                         dict via request.files
+    # files = {'youtube_url': (None, youtube_url, 'text/plain')}
+    # response = requests.post(youtube_url, files=files)  # <-- access files 
+    # #                                                         dict via request.files
     # from flask import request
 
-    youtube_url = None
+    youtube_url = requests.files['youtube_url'].read().decode('utf-8').strip()
     
     # TODO: Check if the song already exists in the database using dba.check_if_song_exists
     # Implement this function in DB_adder.py if not already done

@@ -12,7 +12,7 @@ def check_if_song_exists(youtube_url: str) -> bool:
         cur = con.cursor()
         
         # TODO: Write a SQL query to count how many songs have the given YouTube URL
-        query = None
+        query = "SELECT COUNT(*) FROM songs WHERE youtube_url = ?"
         cur.execute(query, (youtube_url,))
         count = cur.fetchone()[0]
         return count > 0
@@ -26,8 +26,8 @@ def add_song(track_info: dict, resample_rate: None|int = 11025) -> int:
         duration_s = librosa.get_duration(path=audio_path)
         
         # TODO: Insert the song metadata into the songs table
-        query = None
-        data = None
+        query = "INSERT INTO songs (youtube_url, title, artist, artwork_url, audio_path, duration_s) VALUES (?,?)"
+        data = (track_info['youtube_url'], track_info['title'], track_info['artist'], track_info['artwork_url'], audio_path, duration_s)
         cur.execute(query, data)
         con.commit()
 
@@ -44,8 +44,10 @@ def add_song(track_info: dict, resample_rate: None|int = 11025) -> int:
         # HINT: can use the same query string 
         #       as DBcontrol.py:add_hash()
         for address, (anchorT, song_id) in hashes.items():
-            query = None
-            data = None
+            query = """INSERT INTO hashes 
+                    (hash, time_stamp, song_id) 
+                    VALUES (?, ?, ?)"""
+            data = (address, anchorT, song_id)
             cur.execute(query, data)
         con.commit()
         
